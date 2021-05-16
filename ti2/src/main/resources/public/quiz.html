@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="styleQuiz.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+</head>
+<body>
+
+    <div class="start_btn"><button>Começar Quiz</button></div>
+ 
+    <div class="info_box">
+        <div class="info-title"><span>Some Rules of this Quiz</span></div>
+        <div class="info-list">
+            <div class="info">1. Você Tem <span>60 segundos</span> para responder cada questão.</div>
+            <div class="info">2. As questões marcadas não podem ser desfeitas.</div>
+ 
+        </div>
+        <div class="buttons">
+            <button class="quit">Sair do Quiz</button>
+            <button class="restart">Continuar</button>
+        </div>
+    </div>
+
+    <div class="quiz_box">
+        <header>
+            <div class="title">Teste seu nível de procrastinação</div>
+            <div class="timer">
+                <div class="time_left_txt">Time Left</div>
+                <div class="timer_sec">15</div>
+            </div>
+            <div class="time_line"></div>
+        </header>
+        <section>
+            <div class="que_text">
+            </div>
+            <div class="option_list">
+            </div>
+        </section>
+
+        <footer>
+            <div class="total_que">
+            </div>
+            <button class="next_btn">Próxima Questão</button>
+        </footer>
+    </div>
+ 
+    <div class="result_box">
+        <div class="icon">
+            <i class="fas fa-crown"></i>
+        </div>
+        <div class="complete_text">Você Completou o Teste</div>
+        <div class="score_text">
+        </div>
+        <div class="buttons">
+            <button class="restart">Ir para agenda</button>
+          
+            <button class="quit">Quit Quiz</button>
+        </div>
+    </div>
+ 
+    <script src="js/questions.js"></script>
+ 
+    <script src="js/script.js"></script>
+ 
+</body>
+</html>
+</html>

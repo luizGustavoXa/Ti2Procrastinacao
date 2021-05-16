@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="main.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet"
+    id="bootstrap-css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Do it Now!</title>
+  <script src="java/script.js"></script>
+  <script src="login.js"></script>
+  <script src="https://apis.google.com/js/platform.js?onload=onLoadCallback" async defer></script>
+ 
+  <title>Do it Now!</title>
+  <script>
+    // Verifica se o usuário já esta logado e se negativo, redireciona para tela de login        
+    if (!usuarioCorrente.login) {
+      window.location.href = LOGIN_URL;
+    }
+    var cont = 0;
+    function exibeUsuarios() {
+
+      // Popula a tabela com os registros do banco de dados
+      let listaUsuarios = '';
+      for (i = 0; i < db_usuarios.usuarios.length; i++) {
+        let usuario = db_usuarios.usuarios[i];
+        listaUsuarios += `<tr><td scope="row">${usuario.nome}</td><td>${usuario.login}</td><td>${usuario.email}</td></tr>`;
+      }
+
+      // Substitui as linhas do corpo da tabela
+      document.getElementById("table-usuarios").innerHTML = listaUsuarios
+
+    }
+
+    function initPage() {
+
+      // Associa a função de logout ao botão
+      document.getElementById('btn_logout').addEventListener('click', logoutUser);
+
+      // Informa o nome do usuário logado
+      document.getElementById('nomeUsuario').innerHTML = usuarioCorrente.login;
+
+
+      // Lista os usuários 
+      exibeUsuarios();
+    }
+    
+    window.onLoadCallback = function(){
+      
+      
+      const clientId = '104330296733-dqhblq6bfjuupbg00t71g9rdvjgeupb0.apps.googleusercontent.com';
+      const discoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
+      const scope = 'https://www.googleapis.com/auth/calendar';
+
+      gapi
+      .load('client:auth2', () => {
+        gapi
+        .client
+        .init({
+          clientId,
+          discoveryDocs,
+          scope
+          
+        })
+        .then(() => {
+        // Listen for sign-in state changes.
+        
+          gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
+          
+          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          
+        });
+      });  
+  }
+
+ function updateSigninStatus(isSignedIn) {
+    cont ++;
+    if (isSignedIn) {
+      if(cont == 2 ){
+        document.location.reload(true);
+      }
+      console.log(cont)
+      listUpcomingEvents();
+      $("#authorize_button").hide();
+    } else {
+      $("#logoutbutton").hide();
+      $("#divConteudo").hide();
+    }
+  }
+
+
+  async function createCalendarEvent () {
+
+    var form = document.getElementById('meeting-time').value;
+    var forml = document.getElementById('meeting-tim').value;
+    var formla = document.getElementById('teset').value;
+    console.log((new Date(form)).toISOString())
+    let request =  gapi.client.calendar.events.insert({ 
+        calendarId: 'primary',
+        resource: {summary: formla, description: formla,
+        start: {dateTime: (new Date(form)).toISOString()},
+        end: {dateTime: (new Date(forml)).toISOString()}}
+    }).then(e=>
+      console.log(e)
+    ).catch(error=>{
+      console.log(error);
+    })
+    document.location.reload(true);
+
+  }
+
+  function handleLogin(){
+    gapi.auth2.getAuthInstance().signIn();
+    
+
+
+  }
+  
+  function appendPre(message) {
+      var pre = document.getElementById('content');
+      var textContent = document.createTextNode(message + '\n');
+      pre.appendChild(textContent);
+    }
+
+    function handleSignoutClick() {
+      cont = 0;
+      gapi.auth2.getAuthInstance().signOut();
+      document.location.reload(true);
+      
+    }
+    
+  function listUpcomingEvents() {
+    
+      gapi.client.calendar.events.list({
+        'calendarId': 'primary',
+        'timeMin': (new Date()).toISOString(),
+        'showDeleted': false,
+        'singleEvents': true,
+        'maxResults': 10,
+        'orderBy': 'startTime'
+      }).then(function(response) {
+        var events = response.result.items;
+        appendPre('Lista de Tarefas: \n');
+
+        if (events.length > 0) {
+          for (i = 1; i < events.length; i++) {
+            var event = events[i];
+            var when = event.start.dateTime;
+            if (!when) {
+              when = event.start.date;
+            }
+            appendPre(i +' ' + event.summary + ' (' + when + ')')
+          }
+        } else {
+          appendPre('No upcoming events found.');
+        }
+      });
+    }
+
+    // Associa ao evento de carga da página a função para verificar se o usuário está logado
+    window.addEventListener('load', initPage);
+  </script>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <div class="container">
+        <a href="index.html"><img class="logo" src="img/LOGO.png" alt=""></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+          aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item item_menu">
+              <a href="index.html"><button type="button" class="btn btn-dark">Home</button></a>
+            </li>
+
+            
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="index.html#artigos">Artigos</a>
+                <a class="dropdown-item" href="index.html#videos">Vídeos</a>
+                <a class="dropdown-item" href="index.html#dicas">Dicas</a>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a href="SobrenosPage.html"><button type="button" class="btn btn-dark">Sobre nós</button></a>
+            </li>
+            <li class="nav-item">
+              <a href="QuizPage.html"><button type="button" class="btn btn-dark">Quiz</button></a>
+            </li>
+            <li class="btn-group">
+              <button style="text-align: left;" type="button" class="btn btn-dark dropdown-toggle"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Oi, <span id="nomeUsuario"></span>
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-emoji-smile" fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                  <path fill-rule="evenodd"
+                    d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683z" />
+                  <path
+                    d="M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z" />
+                </svg>
+
+              </button>
+              <div class="dropdown-menu">
+                <a id="btn_logout" class="dropdown-item" href="#videos">Sair</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <div class="container conteudo">
+      <div class="row">
+
+        <div class="col-12 enunciador">
+          <h2>Agenda</h2>
+        </div>
+        
+      </div>
+      
+       
+
+      <br></br>
+      
+       <div class="container">
+       <div class="row">
+       <div class="col-sm">
+        <h2>Crie Tarefas</h2>
+         <button class="btn-login" id ="authorize_button"  onclick="handleLogin()" color="blue" >Logar com o Google</button>
+        
+        <button class="btn-login" id ="logoutbutton"  onclick="handleSignoutClick()">Fazer Logout do Google</button>
+      
+      <form action="/agenda" method="post">
+        <input class="form-control" type="datetime-local" id="meeting-time"
+          name="data_inicio" value="2021-05-14T00:00"
+          min="2021-05-14T00:00" max="2023-06-14T00:00">
+
+          <input class="form-control" type="datetime-local" id="meeting-tim"
+          name="data_conclusao" value="2021-05-14T00:00"
+          min="2021-05-14T00:00" max="2023-06-14T00:00">
+
+          <input class="form-control" name="nome" type="text" required placeholder="digite a tarefa" id ="teset" >
+          
+          
+          <button class="btn btn-primary" type="submit" id="authorize_button" onclick="createCalendarEvent()">Criar tarefa</button>
+           <pre id="content" style="font-family: 'Montserrat'; line-height: 1.15;"></pre>
+          </form>
+          </div>
+          <div class="col-sm-6">
+            	
+	
+				<div class="col-md-12">
+					<div class="content w-100">
+				  
+				      <div class="calendar"> 
+				        <div class="year-header"> 
+				          <span class="left-button fa fa-chevron-left" id="prev"> </span> 
+				          <span class="year" id="label"></span> 
+				          <span class="right-button fa fa-chevron-right" id="next"> </span>
+				        </div> 
+				        <table class="months-table w-100"> 
+				          <tbody>
+				            <tr class="months-row">
+				              <td class="month">Jan</td> 
+				              <td class="month">Fev</td> 
+				              <td class="month">Mar</td> 
+				              <td class="month">Abr</td> 
+				              <td class="month">Mai</td> 
+				              <td class="month">Jun</td> 
+				              <td class="month">Jul</td>
+				              <td class="month">Ago</td> 
+				              <td class="month">Set</td> 
+				              <td class="month">Out</td>          
+				              <td class="month">Nov</td>
+				              <td class="month">Dez</td>
+				            </tr>
+				          </tbody>
+				        </table> 
+				        
+				        <table class="days-table w-100"> 
+				          <td class="day">Seg</td> 
+				          <td class="day">Ter</td> 
+				          <td class="day">Qua</td> 
+				          <td class="day">Qui</td> 
+				          <td class="day">Sex</td> 
+				          <td class="day">Sab</td> 
+				          <td class="day">Dom</td>
+				        </table> 
+				        <div class="frame"> 
+				          <table class="dates-table w-100"> 
+			              <tbody class="tbody">             
+			              </tbody> 
+				          </table>
+				        </div> 
+				        
+				      </div>
+				  
+				   
+				    <div class="dialog" id="dialog">
+				        <h2 class="dialog-header"> Add New Event </h2>
+				        <form class="form" id="form">
+				          <div class="form-container" align="center">
+				            <label class="form-label" id="valueFromMyButton" for="name">Event name</label>
+				            <input class="input" type="text" id="name" maxlength="36">
+				            <label class="form-label" id="valueFromMyButton" for="count">Number of people to invite</label>
+				            <input class="input" type="number" id="count" min="0" max="1000000" maxlength="7">
+				            <input type="button" value="Cancel" class="button" id="cancel-button">
+				            <input type="button" value="OK" class="button button-white" id="ok-button">
+				          </div>
+				        </form>
+				      </div>
+				  </div>
+				</div>
+			</div>
+		</div>
+	
+          </div>
+       </div>
+      
+      
+   
+      
+      <div class="row">
+      
+      </div>
+     
+  
+
+  </main>
+
+  <footer class="container text-light">
+    <div class="row">
+      <div class="col-md-3 col-lg-4 col-xl-3">
+        <h5>Sobre</h5>
+        <hr class="bg-white mb-2 mt-0 d-inline-block mx-auto w-25">
+        <p class="mb-0">
+          Somos uma equipe que busca ajudar pessoas a cumprir seus objetivos, sejam eles estudar para alguma
+          prova/concurso importante ou promover algum projeto pessoal, lutando contra a procrastinação que tanto as
+          atrapalha no seu desenvolvimento.
+        </p>
+      </div>
+
+      <div class="col-md-2 col-lg-2 col-xl-2 mx-auto">
+        <h5>Colaboradores</h5>
+        <hr class="bg-white mb-2 mt-0 d-inline-block mx-auto w-25">
+        <ul class="list-unstyled">
+          <li>Lucas Arcanjo</li>
+          <li>Leonardo Ferreira</li>
+          <li>Luiz Gustavo</li>
+          <li>Gabriel Ribeiro</li>
+        </ul>
+      </div>
+
+
+      <div class="col-md-4 col-lg-3 col-xl-3">
+        <h5>Contato</h5>
+        <hr class="bg-white mb-2 mt-0 d-inline-block mx-auto w-25">
+        <ul class="list-unstyled">
+          <li><i class="fa fa-envelope mr-2"></i> doitnow@gmail.com</li>
+          <li><i class="fa fa-phone mr-2"></i> +55 (31) 3214-1503</li>
+          <li><i class="fa fa-print mr-2"></i> +55 (31) 3444-0909</li>
+        </ul>
+      </div>
+      <div class="col-12 copyright mt-3">
+        <p class="float-left">
+          <a href="#"><button type="button" class="btn btn-info">Volte ao Topo!</button></a>
+        </p>
+        <p class="text-right text-muted">©Copyright - 2020 Do it Now! Ltda </p>
+      </div>
+
+    </div>
+  </footer>
+
+
+	<script src="js/jquery.min.js"></script>
+  <script src="js/popper.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/main.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+    integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+    integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+    crossorigin="anonymous"></script>
+
+</body>

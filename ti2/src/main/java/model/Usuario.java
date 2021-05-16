@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class Usuario implements Serializable {
+
+public class Usuario {
 	private int id;
 	private String email;
 	private String nome;
@@ -31,7 +32,7 @@ public class Usuario implements Serializable {
 	public void setId(int id) {
 		this.id = id;
 	}
-
+			
 	
 	public String getEmail() {
 		return email;
@@ -66,4 +67,7 @@ public class Usuario implements Serializable {
 	public boolean equals(Object obj) {
 		return (this.getId() == ((Usuario) obj).getId());
 	}	
+
+	
+    
 }

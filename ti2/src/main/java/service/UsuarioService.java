@@ -1,6 +1,8 @@
 package service;
 
 import java.io.IOException;
+
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,18 +16,21 @@ public class UsuarioService {
 
 	private UsuarioDao usuarioDao;
 
-	public UsuarioService() {
+	public UsuarioService(){
 		try {
-			usuarioDao = new UsuarioDao("produto.dat");
+			usuarioDao = new UsuarioDao();
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		usuarioDao.conectar();
 	}
 
 	public Object add(Request request, Response response) {
 		String email = request.queryParams("email");
-		String nome = request.queryParams("nome");
-		String senha = request.queryParams("enha");
+		String nome = request.queryParams("nome_usuario");
+		String senha = request.queryParams("senha");
 
 		int id = usuarioDao.getMaxId() + 1;
 
@@ -33,30 +38,23 @@ public class UsuarioService {
 
 		usuarioDao.add(usuario);
 
-		response.status(201); // 201 Created
+		response.status(201); 
+		response.redirect("/login.html");// 201 Created
 		return id;
 	}
 
 	public Object get(Request request, Response response) {
-		int id = Integer.parseInt(request.params(":id"));
-		
-		Usuario usuario = (Usuario) usuarioDao.get(id);
-		
-		if (usuario != null) {
-    	    response.header("Content-Type", "application/xml");
-    	    response.header("Content-Encoding", "UTF-8");
+		usuarioDao.conectar();
 
-            return "<usuario>\n" + 
-            		"\t<id>" + usuario.getId() + "</id>\n" +
-            		"\t<email>" + usuario.getEmail() + "</email>\n" +
-            		"\t<nome>" + usuario.getNome() + "</nome>\n" +
-            		"\t<senha>" + usuario.getSenha() + "</senha>\n" +
-            		"</usuario>\n";
-        } else {
-            response.status(404); // 404 Not found
-            return "Produto " + id + " nÃ£o encontrado.";
-        }
+        String email = request.params(":email");
 
+        Usuario usuario = (Usuario) usuarioDao.get(email);
+        usuarioDao.close();
+
+        response.header("Content-Type", "application/json");
+        response.header("Content-Encoding", "UTF-8");
+
+       return usuario;
 	}
 
 	public Object update(Request request, Response response) {
@@ -92,7 +90,7 @@ public class UsuarioService {
         	return id;
         } else {
             response.status(404); // 404 Not found
-            return "usuario nÃ£o encontrado.";
+            return "usuario nÃƒÂ£o encontrado.";
         }
 	}
 
